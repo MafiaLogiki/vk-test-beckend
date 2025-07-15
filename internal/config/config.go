@@ -1,6 +1,7 @@
 package config
 
 import (
+	"marketplace-service/internal/logger"
 	"sync"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -24,12 +25,13 @@ type Config struct {
 var instance *Config
 var once sync.Once
 
-func GetConfig() *Config {
+func GetConfig(l logger.Logger) *Config {
 	once.Do(func () {
 		instance = &Config{}
 		if err := cleanenv.ReadEnv(instance); err != nil {
 			help, _ := cleanenv.GetDescription(instance, nil)
-			print(help)
+			l.Info(help)
+			l.Fatal(err)
 		}
 	})
 
