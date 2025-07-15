@@ -8,5 +8,5 @@ import (
 var db *sql.DB
 
 func ConnectToDatabase() (error) {
-
+	
 }

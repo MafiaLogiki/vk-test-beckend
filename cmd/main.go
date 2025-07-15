@@ -6,5 +6,6 @@ import (
 )
 
 func main() {
-	database.InitDatabase()
+	cfg := config.GetConfig()
+	database.ConnectToDatabase(cfg)
 }

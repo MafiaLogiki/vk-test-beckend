@@ -24,12 +24,14 @@ type Config struct {
 var instance *Config
 var once sync.Once
 
-func GetConfig() *config {
-	once.Do(func {
+func GetConfig() *Config {
+	once.Do(func () {
 		instance = &Config{}
 		if err := cleanenv.ReadEnv(instance); err != nil {
 			help, _ := cleanenv.GetDescription(instance, nil)
 			print(help)
 		}
 	})
+
+	return instance
 }
