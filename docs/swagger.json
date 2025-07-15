@@ -35,56 +35,29 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "User successfully registered",
-                        "schema": {
-                            "$ref": "#/definitions/register.SuccessResponse"
-                        }
+                        "description": "User successfully registered"
                     },
                     "400": {
-                        "description": "Invalid request payload or user already exists",
-                        "schema": {
-                            "$ref": "#/definitions/register.ErrorResponse"
-                        }
+                        "description": "Invalid request payload or user already exists"
                     },
                     "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/register.ErrorResponse"
-                        }
+                        "description": "Internal server error"
                     }
                 }
             }
         }
     },
     "definitions": {
-        "register.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string",
-                    "example": "Something went wrong"
-                }
-            }
-        },
         "register.RegisterRequest": {
             "type": "object",
             "properties": {
                 "password": {
                     "type": "string",
-                    "example": "password123"
+                    "example": "secure_password"
                 },
                 "username": {
                     "type": "string",
-                    "example": "testuser"
-                }
-            }
-        },
-        "register.SuccessResponse": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "example": "Operation successful"
+                    "example": "john_doe"
                 }
             }
         }

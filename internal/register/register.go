@@ -2,11 +2,18 @@ package register
 
 import (
 	"encoding/json"
+	"errors"
 	"marketplace-service/internal/database"
 	"marketplace-service/internal/logger"
 	"marketplace-service/internal/token"
 	"net/http"
+	"fmt"
 )
+
+type RegisterRequest struct {
+	Username string `json:"username" example:"john_doe"`
+	Password string `json:"password" example:"secure_password"`
+}
 
 type handler struct {
 	logger logger.Logger
@@ -31,22 +38,34 @@ func (h *handler) RegisterRoutes(mux *http.ServeMux) {
 // @Accept       json
 // @Produce      json
 // @Param        request body RegisterRequest true "User registration details"
-
 // @Success      201 "User successfully registered"
 // @Failure      400 "Invalid request payload or user already exists"
 // @Failure      500 "Internal server error"
 // @Router       /api/v1/users [post]
 func (h *handler) registerNewUser(w http.ResponseWriter, r *http.Request) {
-	var userData struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
+	var userData RegisterRequest
+
+	err := json.NewDecoder(r.Body).Decode(&userData)
+	if err != nil {
+		h.logger.Error("Failed to decode request body: %v", err)
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
 	}
 
-	json.NewDecoder(r.Body).Decode(&userData)
-
-	err := database.CreateNewUser(userData.Username, userData.Password)
+	id, err := database.CreateNewUser(userData.Username, userData.Password)
 
 	if err != nil {
-
+		if errors.Is(err, database.ErrUserAlreadyExists) {
+			http.Error(w, "User with this username already exists", http.StatusBadRequest)
+			return
+		}
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
 	}
+
+	token, _ := h.token.GenerateToken(fmt.Sprintf("%d", id))
+
+	w.Header().Set("Authorization", token)
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte("User successfully registered"))
 }

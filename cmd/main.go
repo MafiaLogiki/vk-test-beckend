@@ -14,15 +14,21 @@ package main
 import (
 	"fmt"
 	"net/http"
-	
+	"time"
+
 	"marketplace-service/internal/config"
-	"marketplace-service/internal/logger"
 	"marketplace-service/internal/database"
+	"marketplace-service/internal/logger"
 	"marketplace-service/internal/register"
+	"marketplace-service/internal/token"
 
 	docs "marketplace-service/docs"
 
 	httpSwagger "github.com/swaggo/http-swagger/v2"
+)
+
+const (
+	secret = "vk-test"
 )
 
 func main() {
@@ -35,13 +41,15 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+
+	token := token.NewService(secret, time.Hour, l)
 	
-	docs.SwaggerInfo.BasePath = "/";
+	docs.SwaggerInfo.BasePath = "/"
 	mux.Handle("/api/v1/swagger/", httpSwagger.Handler(
 		httpSwagger.URL("doc.json"),
 	))
 	
-	regHandler := register.NewHandler(l, nil)
+	regHandler := register.NewHandler(l, token)
 	regHandler.RegisterRoutes(mux)
 
 	server := &http.Server {

@@ -2,13 +2,16 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
 
 	"marketplace-service/internal/config"
 	"marketplace-service/internal/logger"
 )
+
+var ErrUserAlreadyExists = errors.New("user already exists")
 
 var database *sql.DB
 
@@ -31,9 +34,15 @@ func ConnectToDatabase(cfg *config.Config, l logger.Logger) (error) {
     return err
 }
 
-func CreateNewUser(username, password string) error {
-	query := fmt.Sprintf(`
-		INSERT INTO users(username, password) VALUE("%v", "%v")`, username, password)
-	_, err := database.Exec(query)
-	return err 
+func CreateNewUser(username, password string) (int64, error) {
+	query := `INSERT INTO users(username, password) VALUES($1, $2)`
+	result, err := database.Exec(query, username, password)
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+			return 0, ErrUserAlreadyExists
+		}
+		return 0, err
+	}
+	id, _ := result.LastInsertId()
+	return id, nil
 }

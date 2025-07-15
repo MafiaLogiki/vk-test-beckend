@@ -1,24 +1,12 @@
 basePath: /api/v1
 definitions:
-  register.ErrorResponse:
-    properties:
-      error:
-        example: Something went wrong
-        type: string
-    type: object
   register.RegisterRequest:
     properties:
       password:
-        example: password123
+        example: secure_password
         type: string
       username:
-        example: testuser
-        type: string
-    type: object
-  register.SuccessResponse:
-    properties:
-      message:
-        example: Operation successful
+        example: john_doe
         type: string
     type: object
 host: localhost:8080
@@ -45,16 +33,10 @@ paths:
       responses:
         "201":
           description: User successfully registered
-          schema:
-            $ref: '#/definitions/register.SuccessResponse'
         "400":
           description: Invalid request payload or user already exists
-          schema:
-            $ref: '#/definitions/register.ErrorResponse'
         "500":
           description: Internal server error
-          schema:
-            $ref: '#/definitions/register.ErrorResponse'
       summary: Register a new user
       tags:
       - Users
