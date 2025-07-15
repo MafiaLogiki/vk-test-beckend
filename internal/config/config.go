@@ -1,5 +1,11 @@
 package config
 
+import (
+	"sync"
+
+	"github.com/ilyakaznacheev/cleanenv"
+)
+
 type Config struct {
 	Listen struct {
 		BindIp string `env:"BIND_IP"`
@@ -13,4 +19,17 @@ type Config struct {
 		Password string `env:"DB_PASSWORD"`
 		DBName   string `env:"DB_NAME"`
 	}
+}
+
+var instance *Config
+var once sync.Once
+
+func GetConfig() *config {
+	once.Do(func {
+		instance = &Config{}
+		if err := cleanenv.ReadEnv(instance); err != nil {
+			help, _ := cleanenv.GetDescription(instance, nil)
+			print(help)
+		}
+	})
 }
