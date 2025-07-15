@@ -30,3 +30,10 @@ func ConnectToDatabase(cfg *config.Config, l logger.Logger) (error) {
 
     return err
 }
+
+func CreateNewUser(username, password string) error {
+	query := fmt.Sprintf(`
+		INSERT INTO users(username, password) VALUE("%v", "%v")`, username, password)
+	_, err := database.Exec(query)
+	return err 
+}

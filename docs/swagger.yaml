@@ -1,0 +1,66 @@
+basePath: /api/v1
+definitions:
+  register.ErrorResponse:
+    properties:
+      error:
+        example: Something went wrong
+        type: string
+    type: object
+  register.RegisterRequest:
+    properties:
+      password:
+        example: password123
+        type: string
+      username:
+        example: testuser
+        type: string
+    type: object
+  register.SuccessResponse:
+    properties:
+      message:
+        example: Operation successful
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a backend service for VK test task.
+  title: VK Test Backend API
+  version: "1.0"
+paths:
+  /api/v1/users:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user with a username and password.
+      parameters:
+      - description: User registration details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/register.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User successfully registered
+          schema:
+            $ref: '#/definitions/register.SuccessResponse'
+        "400":
+          description: Invalid request payload or user already exists
+          schema:
+            $ref: '#/definitions/register.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/register.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - Users
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

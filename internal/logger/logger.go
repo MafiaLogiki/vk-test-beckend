@@ -60,3 +60,7 @@ func (f *customTextFormatter) Format(entry *logrus.Entry) ([]byte, error){
     b.WriteString("\n")
     return b.Bytes(), nil
 }
+
+func LoggerMiddleware() {
+
+}
