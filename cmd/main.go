@@ -9,5 +9,9 @@ import (
 func main() {
 	l := logger.GetLogger()
 	cfg := config.GetConfig(l)
-	database.ConnectToDatabase(cfg)
+	err := database.ConnectToDatabase(cfg, l)
+
+	if err != nil {
+		l.Fatal(err)
+	}
 }

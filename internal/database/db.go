@@ -3,18 +3,20 @@ package database
 import (
 	"database/sql"
 	"fmt"
+
 	_ "github.com/lib/pq"
 
 	"marketplace-service/internal/config"
+	"marketplace-service/internal/logger"
 )
 
 var database *sql.DB
 
-func ConnectToDatabase(cfg *config.Config) (error) {
+func ConnectToDatabase(cfg *config.Config, l logger.Logger) (error) {
     databaseInfo := fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v sslmode=disable",
         cfg.Postgres.Host,
         cfg.Postgres.Port,
-        cfg.Postgres.HostName,
+        cfg.Postgres.User,
         cfg.Postgres.Password,
         cfg.Postgres.DBName,
     )
