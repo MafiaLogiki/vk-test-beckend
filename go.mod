@@ -1,6 +1,6 @@
 module marketplace-service
 
-go 1.25rc2
+go 1.25rc1
 
 require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
