@@ -48,11 +48,10 @@ func (f *customTextFormatter) Format(entry *logrus.Entry) ([]byte, error){
             b.WriteString(fmt.Sprintf(" %s=%v", key, value))
         }
     } else {
-        functionWithoutPrefix, _ := strings.CutPrefix(entry.Caller.Function, "github.com/MafiaLogiki")
         b.WriteString(fmt.Sprintf("[%s] [%s] [%s:%d] %s", 
             strings.ToUpper(entry.Level.String()),
             entry.Caller.File,
-            functionWithoutPrefix,
+            entry.Caller.Function,
             entry.Caller.Line,
             entry.Message,
         ))
