@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 
 	_ "github.com/lib/pq"
@@ -11,8 +10,6 @@ import (
 	"marketplace-service/internal/logger"
 )
 
-var ErrUserAlreadyExists = errors.New("user already exists")
-var ErrInvalidUsernameOrPassword = errors.New("invalid username or password")
 
 
 func ConnectToDatabase(cfg *config.Config, l logger.Logger) (*sql.DB, error) {

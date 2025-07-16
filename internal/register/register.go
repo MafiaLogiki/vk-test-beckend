@@ -82,7 +82,7 @@ func (h *handler) registerNewUser(w http.ResponseWriter, r *http.Request) {
 	id, err := h.db.CreateUser(user)
 
 	if err != nil {
-		if errors.Is(err, database.ErrUserAlreadyExists) {
+		if errors.Is(err, store.ErrUserAlreadyExists) {
 			http.Error(w, "User with this username already exists", http.StatusBadRequest)
 			return
 		}
