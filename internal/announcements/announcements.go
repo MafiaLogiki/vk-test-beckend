@@ -124,32 +124,10 @@ func (h *handler) createAnnouncement (w http.ResponseWriter, r *http.Request) {
 // @Router       /api/v1/announcements [get]
 // @Security     Bearer
 func (h *handler) getAnnouncements(w http.ResponseWriter, r *http.Request) {
-	pageString := r.URL.Query().Get("page")
-	if pageString == "" {
-		http.Error(w, "Choose a page to display", http.StatusBadRequest)
-		return
-	}
 
-	page, err := strconv.Atoi(pageString)
+	page := r.Context().Value(middleware.PageKey).(int)
+	limit := r.Context().Value(middleware.LimitKey).(int)
 
-	if err != nil || page < 1 {
-		http.Error(w, "Invalid page number", http.StatusBadRequest)
-		return
-	}
-
-	limitString := r.URL.Query().Get("limit")
-	if limitString == "" {
-		http.Error(w, "Choose an items count on page limit", http.StatusBadRequest)
-		return
-	}
-
-	limit, err := strconv.Atoi(limitString)
-	
-	if err != nil || limit < 1 {
-		http.Error(w, "Invalid page number", http.StatusBadRequest)
-		return
-	}
-	
 	currentUserIdString, _ := h.token.ValidateToken(token.ExtractToken(r))
 	currentUserId, err := strconv.Atoi(currentUserIdString)
 	h.logger.Debug(currentUserId, err)
