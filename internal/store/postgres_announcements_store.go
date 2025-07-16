@@ -19,7 +19,6 @@ func (s *PostgresAnnouncementsStore) CreateAnnouncement(an *model.Announcement) 
 	return err
 }
 
-// Исправленная функция extractAnnouncements
 func extractAnnouncements(rows *sql.Rows) ([]model.Announcement, error) {
 	defer rows.Close()
 
