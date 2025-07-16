@@ -20,6 +20,8 @@ type Config struct {
 		Password string `env:"DB_PASSWORD"`
 		DBName   string `env:"DB_NAME"`
 	}
+
+	Secret string `env:"JWT_SECRET"`
 }
 
 var instance *Config

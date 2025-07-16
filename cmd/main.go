@@ -30,9 +30,6 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
-const (
-	secret = "vk-test"
-)
 
 func main() {
 	l := logger.GetLogger()
@@ -45,7 +42,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	token := token.NewService(secret, time.Hour, l)
+	token := token.NewService(cfg.Secret, time.Hour, l)
 	
 	docs.SwaggerInfo.BasePath = "/"
 	mux.Handle("/api/v1/swagger/", httpSwagger.Handler(
