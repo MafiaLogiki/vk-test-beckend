@@ -29,7 +29,7 @@ func ExtractToken(r *http.Request) string {
 	if tokenSplit[0] != "Bearer" {
 		return ""
 	}
-	return tokenSplit[0]
+	return tokenSplit[1]
 }
 
 func (s *Service) GenerateToken(userID string) (string, error) {
