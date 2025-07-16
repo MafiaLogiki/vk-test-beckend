@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"marketplace-service/internal/auth"
 	"marketplace-service/internal/logger"
+	"marketplace-service/internal/middleware"
 	"marketplace-service/internal/model"
 	"marketplace-service/internal/store"
 	"marketplace-service/internal/token"
@@ -35,8 +36,32 @@ func NewHandler(db store.AnnouncementsStore, logger logger.Logger, token *token.
 }
 
 func (h *handler) RegisterService(mux *http.ServeMux) {
+	
+	ValidationRules := []middleware.ValidationRule {
+		{
+			ParamName: "page",
+			Validator: middleware.ValidatePositiveInt,
+			ContextKey: middleware.PageKey,
+		},
+		{
+			ParamName: "limit",
+			Validator: middleware.ValidatePositiveInt,
+			ContextKey: middleware.LimitKey,
+		},
+	}
+
+	getAnnouncementsHandler := http.HandlerFunc(h.getAnnouncements)
+	validationMiddleware := middleware.ValidateQueryParams(ValidationRules...)
+	authMiddleware := auth.OptionalAuthMiddleware(h.token)
+
+	finalHandler := middleware.Chain(
+		getAnnouncementsHandler,
+		validationMiddleware,
+		authMiddleware,
+	)
+
 	mux.HandleFunc("POST /api/v1/announcements", auth.AuthMiddleware(h.token, h.createAnnouncement))
-	mux.HandleFunc("GET /api/v1/announcements", auth.OptionalAuthMiddleware(h.token, h.getAnnouncements))
+	mux.Handle("GET /api/v1/announcements", finalHandler)
 }
 
 // Announcement creation
