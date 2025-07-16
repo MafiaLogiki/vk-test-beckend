@@ -20,6 +20,19 @@ definitions:
         example: john_doe
         type: string
     type: object
+  model.Announcement:
+    properties:
+      article:
+        type: string
+      costRubles:
+        type: integer
+      imageAddress:
+        type: string
+      text:
+        type: string
+      userId:
+        type: integer
+    type: object
   register.RegisterRequest:
     properties:
       password:
@@ -37,6 +50,39 @@ info:
   version: "1.0"
 paths:
   /api/v1/announcements:
+    get:
+      description: Get a paginated list of announcements. This endpoint is public.
+      parameters:
+      - description: Page number for pagination (starts from 1)
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: limit
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Announcement'
+            type: array
+        "400":
+          description: Invalid page or limit parameter
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      summary: Get announcements list
+      tags:
+      - Announcements
     post:
       consumes:
       - application/json

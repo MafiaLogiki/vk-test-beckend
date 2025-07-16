@@ -16,6 +16,55 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/api/v1/announcements": {
+            "get": {
+                "description": "Get a paginated list of announcements. This endpoint is public.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Announcements"
+                ],
+                "summary": "Get announcements list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number for pagination (starts from 1)",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Announcement"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid page or limit parameter",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -160,6 +209,26 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "example": "john_doe"
+                }
+            }
+        },
+        "model.Announcement": {
+            "type": "object",
+            "properties": {
+                "article": {
+                    "type": "string"
+                },
+                "costRubles": {
+                    "type": "integer"
+                },
+                "imageAddress": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "integer"
                 }
             }
         },
