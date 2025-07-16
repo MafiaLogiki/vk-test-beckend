@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"marketplace-service/internal/auth"
 	"marketplace-service/internal/database"
 	"marketplace-service/internal/logger"
 	"marketplace-service/internal/model"
@@ -46,7 +47,9 @@ func NewHandler(db store.UserStore, l logger.Logger, token *token.Service) *hand
 }
 
 func (h *handler) RegisterRoutes(mux *http.ServeMux) {
-	mux.HandleFunc("POST /api/v1/users", h.registerNewUser)
+	authMiddleware := auth.OptionalAuthMiddleware(h.token)	
+
+	mux.Handle("POST /api/v1/users", authMiddleware(http.HandlerFunc(h.registerNewUser)))
 }
 
 // registerNewUser handles user registration.
