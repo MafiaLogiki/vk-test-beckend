@@ -65,6 +65,15 @@ paths:
         name: limit
         required: true
         type: integer
+      - description: Sort order for announcements.
+        enum:
+        - price_asc
+        - price_desc
+        - date_asc
+        - date_desc
+        in: query
+        name: sort_by
+        type: string
       produces:
       - application/json
       responses:

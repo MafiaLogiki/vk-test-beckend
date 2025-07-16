@@ -40,13 +40,21 @@ func (h *handler) RegisterService(mux *http.ServeMux) {
 	ValidationRules := []middleware.ValidationRule {
 		{
 			ParamName: "page",
+			DefaultValue: "1",
 			Validator: middleware.ValidatePositiveInt,
 			ContextKey: middleware.PageKey,
 		},
 		{
 			ParamName: "limit",
+			DefaultValue: "10",
 			Validator: middleware.ValidatePositiveInt,
 			ContextKey: middleware.LimitKey,
+		},
+		{
+			ParamName: "sort_by",
+			DefaultValue: store.DefaultSorting,
+			Validator: middleware.ValidateByMap(store.ValidSortColumns),
+			ContextKey: middleware.SortKey,
 		},
 	}
 
@@ -116,23 +124,25 @@ func (h *handler) createAnnouncement (w http.ResponseWriter, r *http.Request) {
 // @Description  Get a paginated list of announcements. This endpoint is public.
 // @Tags         Announcements
 // @Produce      json
-// @Param        page   query      int  true  "Page number for pagination (starts from 1)"
-// @Param        limit  query      int  true  "Number of items per page"
-// @Success      200    {array}    model.Announcement
-// @Failure      400    {string}   string "Invalid page or limit parameter"
-// @Failure      500    {string}   string "Internal server error"
+// @Param        page     query      int    true  "Page number for pagination (starts from 1)"
+// @Param        limit    query      int    true  "Number of items per page"
+// @Param        sort_by  query      string false "Sort order for announcements." Enums(price_asc, price_desc, date_asc, date_desc)
+// @Success      200      {array}    model.Announcement
+// @Failure      400      {string}   string "Invalid page or limit parameter"
+// @Failure      500      {string}   string "Internal server error"
 // @Router       /api/v1/announcements [get]
 // @Security     Bearer
 func (h *handler) getAnnouncements(w http.ResponseWriter, r *http.Request) {
 
 	page := r.Context().Value(middleware.PageKey).(int)
 	limit := r.Context().Value(middleware.LimitKey).(int)
+	sortBy := r.Context().Value(middleware.SortKey).(string)
 
 	currentUserIdString, _ := h.token.ValidateToken(token.ExtractToken(r))
 	currentUserId, err := strconv.Atoi(currentUserIdString)
 	h.logger.Debug(currentUserId, err)
 
-	announcements, err := h.db.GetAnnouncementsByPage(page, limit, currentUserId)
+	announcements, err := h.db.GetAnnouncementsByPage(page, limit, currentUserId, sortBy)
 	h.logger.Debug(announcements)
 
 	if err != nil {

@@ -14,12 +14,14 @@ type ValidatorFunc func(value string) (any, error)
 const (
 	PageKey contextKey = "page"
 	LimitKey contextKey = "limit"
+	SortKey contextKey = "sort_by"
 )
 
 type ValidationRule struct {
-	ParamName  string
-	Validator  ValidatorFunc
-	ContextKey contextKey
+	ParamName    string
+	DefaultValue string
+	Validator    ValidatorFunc
+	ContextKey   contextKey
 }
 
 func ValidatePositiveInt(value string) (any, error) {
@@ -34,6 +36,15 @@ func ValidatePositiveInt(value string) (any, error) {
 	return i, nil
 }
 
+func ValidateByMap(m map[string]string) ValidatorFunc {
+	return func (value string) (any, error ) {
+		if _, ok := m[value]; !ok {
+			return nil, fmt.Errorf("invalid value")
+		}
+		return m[value], nil
+	}
+}
+
 func ValidateQueryParams(rules ...ValidationRule) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
@@ -43,9 +54,11 @@ func ValidateQueryParams(rules ...ValidationRule) func(http.Handler) http.Handle
 			for _, rule := range rules {
 				valueStr := query.Get(rule.ParamName)
 				if valueStr == "" {
-					http.Error(w, "Invalid request. There is must be" + valueStr + "query param", http.StatusBadRequest)
-					return
+					valueStr = rule.DefaultValue
+					// http.Error(w, "Invalid request. There is must be" + valueStr + "query param", http.StatusBadRequest)
+					// return
 				}
+
 				validatedValue, err := rule.Validator(valueStr)
 				if err != nil {
 					msg := fmt.Sprintf("Invalid query parameter %s: %v", rule.ParamName, err)
@@ -54,7 +67,7 @@ func ValidateQueryParams(rules ...ValidationRule) func(http.Handler) http.Handle
 				}
 				ctx = context.WithValue(ctx, rule.ContextKey, validatedValue)
 			}
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }

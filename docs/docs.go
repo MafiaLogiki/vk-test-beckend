@@ -44,6 +44,18 @@ const docTemplate = `{
                         "name": "limit",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "enum": [
+                            "price_asc",
+                            "price_desc",
+                            "date_asc",
+                            "date_desc"
+                        ],
+                        "type": "string",
+                        "description": "Sort order for announcements.",
+                        "name": "sort_by",
+                        "in": "query"
                     }
                 ],
                 "responses": {
