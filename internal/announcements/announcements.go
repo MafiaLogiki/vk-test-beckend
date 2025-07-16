@@ -143,9 +143,9 @@ func (h *handler) createAnnouncement (w http.ResponseWriter, r *http.Request) {
 	response.Id = an.Id
 	response.UserId = an.UserId
 	
-	json.NewEncoder(w).Encode(response)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("Announcement successfully created"))
+	json.NewEncoder(w).Encode(response)
 }
 
 
@@ -181,9 +181,20 @@ func (h *handler) getAnnouncements(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
+	response := make([]AnnouncementsGetResponse, len(announcements))
+
+	for i, an := range announcements {
+		response[i].Article       = an.Article
+		response[i].IsOwner       = an.IsOwner
+		response[i].ImageAddress  = an.ImageAddress
+		response[i].CostRubles    = an.CostRubles
+		response[i].Text          = an.Text
+		response[i].OwnerUsername = an.OwnerUsername
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	if err = json.NewEncoder(w).Encode(announcements); err != nil {
+	if err = json.NewEncoder(w).Encode(response); err != nil {
 		h.logger.Info(err)
 	}
 }
