@@ -3,6 +3,8 @@ package token
 import (
 	"fmt"
 	"marketplace-service/internal/logger"
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -20,6 +22,14 @@ func NewService(secretKey string, expirationTime time.Duration, l logger.Logger)
 		expirationTime: expirationTime,
 		logger: l,
 	}
+}
+
+func ExtractToken(r *http.Request) string {
+	tokenSplit := strings.Split(r.Header.Get("Authorization"), " ")
+	if tokenSplit[0] != "Bearer" {
+		return ""
+	}
+	return tokenSplit[1]
 }
 
 func (s *Service) GenerateToken(userID string) (string, error) {

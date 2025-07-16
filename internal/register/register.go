@@ -55,7 +55,7 @@ func (h *handler) registerNewUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
-	user := &model.User{ID: 0, Username: requestData.Username, Password: requestData.Password}
+	user := &model.User{Username: requestData.Username, Password: requestData.Password}
 	id, err := h.db.CreateUser(user)
 
 	if err != nil {
@@ -66,7 +66,7 @@ func (h *handler) registerNewUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-
+	
 	token, _ := h.token.GenerateToken(fmt.Sprintf("%d", id))
 
 	w.Header().Set("Authorization", token)

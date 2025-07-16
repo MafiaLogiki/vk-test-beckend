@@ -91,7 +91,7 @@ func isAuthorized(tok *token.Service, r *http.Request) bool {
 	return true
 }
 
-func authMiddleware(tok *token.Service, next http.HandlerFunc) http.HandlerFunc {
+func AuthMiddleware(tok *token.Service, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if !isAuthorized(tok, r) {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
@@ -102,7 +102,7 @@ func authMiddleware(tok *token.Service, next http.HandlerFunc) http.HandlerFunc 
 	}
 }
 
-func optionalAuthMiddleware(tok *token.Service, next http.HandlerFunc) http.HandlerFunc {
+func OptionalAuthMiddleware(tok *token.Service, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get("Authorization")
 		if token == "" {

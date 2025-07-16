@@ -9,13 +9,50 @@
     "host": "localhost:8080",
     "basePath": "/api/v1",
     "paths": {
-        "/api/v1/auth": {
+        "/api/v1/announcements": {
             "post": {
                 "security": [
                     {
                         "Bearer": []
                     }
                 ],
+                "description": "Create an announcement for authorized users.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Announcements"
+                ],
+                "summary": "Create an announcement",
+                "parameters": [
+                    {
+                        "description": "Announcement details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/announcements.AnnouncementsPostRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Announcement successfully created"
+                    },
+                    "400": {
+                        "description": "Invalid request payload"
+                    },
+                    "500": {
+                        "description": "Internal server error"
+                    }
+                }
+            }
+        },
+        "/api/v1/auth": {
+            "post": {
                 "description": "Auth user by username and password.",
                 "consumes": [
                     "application/json"
@@ -90,6 +127,23 @@
         }
     },
     "definitions": {
+        "announcements.AnnouncementsPostRequest": {
+            "type": "object",
+            "properties": {
+                "article": {
+                    "type": "string"
+                },
+                "cost": {
+                    "type": "integer"
+                },
+                "imageURL": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
         "auth.AuthRequest": {
             "type": "object",
             "properties": {

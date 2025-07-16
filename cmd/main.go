@@ -16,11 +16,13 @@ import (
 	"net/http"
 	"time"
 
+	"marketplace-service/internal/announcements"
 	"marketplace-service/internal/auth"
 	"marketplace-service/internal/config"
 	"marketplace-service/internal/database"
 	"marketplace-service/internal/logger"
 	"marketplace-service/internal/register"
+	"marketplace-service/internal/store"
 	"marketplace-service/internal/token"
 
 	docs "marketplace-service/docs"
@@ -50,11 +52,19 @@ func main() {
 		httpSwagger.URL("doc.json"),
 	))
 	
-	regHandler := register.NewHandler(db, l, token)
+
+	userStore := store.NewPostgresUserStore(db)
+
+	regHandler := register.NewHandler(userStore, l, token)
 	regHandler.RegisterRoutes(mux)
 
-	authHandler := auth.NewHandler(db, l, token)
+	authHandler := auth.NewHandler(userStore, l, token)
 	authHandler.RegisterService(mux)
+
+	announcementStore := store.NewPostgresAnnouncementsStore(db)
+
+	announcementsHandler := announcements.NewHandler(announcementStore, l, token)
+	announcementsHandler.RegisterService(mux)
 
 	server := &http.Server {
 		Addr: fmt.Sprintf("%s:%d", cfg.Listen.BindIp, cfg.Listen.Port),
