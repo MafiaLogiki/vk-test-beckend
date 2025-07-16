@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"marketplace-service/internal/auth"
-	"marketplace-service/internal/database"
 	"marketplace-service/internal/logger"
 	"marketplace-service/internal/model"
 	"marketplace-service/internal/store"
