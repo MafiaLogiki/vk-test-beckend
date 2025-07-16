@@ -35,7 +35,7 @@ const (
 func main() {
 	l := logger.GetLogger()
 	cfg := config.GetConfig(l)
-	err := database.ConnectToDatabase(cfg, l)
+	db, err := database.ConnectToDatabase(cfg, l)
 
 	if err != nil {
 		l.Fatal(err)
@@ -50,10 +50,10 @@ func main() {
 		httpSwagger.URL("doc.json"),
 	))
 	
-	regHandler := register.NewHandler(l, token)
+	regHandler := register.NewHandler(db, l, token)
 	regHandler.RegisterRoutes(mux)
 
-	authHandler := auth.NewHandler(l, token)
+	authHandler := auth.NewHandler(db, l, token)
 	authHandler.RegisterService(mux)
 
 	server := &http.Server {

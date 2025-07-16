@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"marketplace-service/internal/database"
 	"marketplace-service/internal/logger"
+	"marketplace-service/internal/store"
 	"marketplace-service/internal/token"
 	"net/http"
 	"strings"
 )
 
 type handler struct {
+	db     store.UserStore
 	logger logger.Logger
 	token  *token.Service
 }
@@ -21,15 +23,16 @@ type AuthRequest struct {
 	Password string `json:"password" example:"12345"`
 }
 
-func NewHandler(l logger.Logger, token *token.Service) *handler {
+func NewHandler(db store.UserStore, l logger.Logger, token *token.Service) *handler {
 	return &handler{
+		db:     db,
 		logger: l,
 		token:  token,
 	}
 }
 
 func (h *handler) RegisterService(mux *http.ServeMux) {
-	mux.HandleFunc("POST /api/v1/auth", authMiddleware(h.token, h.authHandler))
+	mux.HandleFunc("POST /api/v1/auth", h.authHandler)
 }
 
 
@@ -55,7 +58,7 @@ func (h *handler) authHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	id, err := database.CheckIfUserValid(userData.Username, userData.Password)
+	user, err := h.db.GetUserByCredentials(userData.Username, userData.Password)
 	if err != nil {
 		if errors.Is(err, database.ErrInvalidUsernameOrPassword) {
 			http.Error(w, "Invalid username or password", http.StatusBadRequest)
@@ -66,7 +69,7 @@ func (h *handler) authHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, _ := h.token.GenerateToken(fmt.Sprintf("%d", id))
+	token, _ := h.token.GenerateToken(fmt.Sprintf("%d", user.ID))
 
 	w.Header().Set("Authorization", token)
 	w.WriteHeader(http.StatusCreated)
@@ -97,4 +100,22 @@ func authMiddleware(tok *token.Service, next http.HandlerFunc) http.HandlerFunc 
 
 		next.ServeHTTP(w, r)
 	}
+}
+
+func optionalAuthMiddleware(tok *token.Service, next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+		if token == "" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		if !isAuthorized(tok, r) {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	}
+
 }
