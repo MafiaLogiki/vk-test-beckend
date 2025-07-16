@@ -15,9 +15,8 @@ func NewPostgresAnnouncementsStore(db *sql.DB) *PostgresAnnouncementsStore {
 }
 
 func (s *PostgresAnnouncementsStore) CreateAnnouncement(an *model.Announcement) error {
-	query := `INSERT INTO announcements(user_id, title, text, image_url, price) VALUES($1, $2, $3, $4, $5) RETURNING id`
-	var id int64
-	err := s.DB.QueryRow(query, an.UserId, an.Article, an.Text, an.ImageAddress, an.CostRubles).Scan(&id)
+	query := `INSERT INTO announcements(user_id, title, text, image_url, price) VALUES($1, $2, $3, $4, $5) RETURNING id, created_at`
+	err := s.DB.QueryRow(query, an.UserId, an.Article, an.Text, an.ImageAddress, an.CostRubles).Scan(&an.Id, &an.Date)
 	return err
 }
 
@@ -61,7 +60,7 @@ func (s *PostgresAnnouncementsStore) GetAnnouncementsByPage(page, limit, current
 		SELECT users.username, title, text, image_url, price,
 		CASE WHEN $3 > 0 THEN (user_id = $3) ELSE NULL END AS is_owner
 		FROM announcements
-		JOIN users ON announcements.user_id = users.id	
+		JOIN users ON announcements.user_id = users.id
 		ORDER BY %s
 		LIMIT $1
 		OFFSET $2

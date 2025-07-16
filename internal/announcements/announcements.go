@@ -10,6 +10,7 @@ import (
 	"marketplace-service/internal/token"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 
@@ -25,6 +26,25 @@ type AnnouncementsPostRequest struct {
 	Text     string
 	ImageURL string
 	Cost     int32
+}
+
+type AnnouncementsPostResponse struct {
+	Id            int64     `json:"id"`
+	UserId        int64     `json:"user_id"`
+	Article       string    `json:"title"`
+	Text          string    `json:"text"`
+	CostRubles    int32     `json:"price"`
+	ImageAddress  string    `json:"image_url"`
+	Date          time.Time `json:"created_at"`
+}
+
+type AnnouncementsGetResponse struct {
+	OwnerUsername string    `json:"owner_username"`
+	Article       string    `json:"title"`
+	Text          string    `json:"text"`
+	CostRubles    int32     `json:"price"`
+	ImageAddress  string    `json:"image_url"`
+	IsOwner       *bool     `json:"is_owner,omitempty"`
 }
 
 func NewHandler(db store.AnnouncementsStore, logger logger.Logger, token *token.Service) *handler {
@@ -102,8 +122,8 @@ func (h *handler) createAnnouncement (w http.ResponseWriter, r *http.Request) {
 	an.Article = apr.Article
 	an.Text = apr.Text
 	an.CostRubles = apr.Cost
+
 	id, err := strconv.Atoi(userId)
-	h.logger.Debug("id: ", id, " err: ", err)
 	an.UserId = int64(id)
 
 	err = h.db.CreateAnnouncement(&an)
@@ -113,7 +133,17 @@ func (h *handler) createAnnouncement (w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var response AnnouncementsPostResponse
 
+	response.Article = an.Article
+	response.Text = an.Text
+	response.CostRubles = an.CostRubles
+	response.ImageAddress = an.ImageAddress
+	response.Date = an.Date
+	response.Id = an.Id
+	response.UserId = an.UserId
+	
+	json.NewEncoder(w).Encode(response)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("Announcement successfully created"))
 }
@@ -124,8 +154,8 @@ func (h *handler) createAnnouncement (w http.ResponseWriter, r *http.Request) {
 // @Description  Get a paginated list of announcements. This endpoint is public.
 // @Tags         Announcements
 // @Produce      json
-// @Param        page     query      int    true  "Page number for pagination (starts from 1)"
-// @Param        limit    query      int    true  "Number of items per page"
+// @Param        page     query      int    false  "Page number for pagination (starts from 1). Defaults to 1."
+// @Param        limit    query      int    false  "Number of items per page. Defaults to 10."
 // @Param        sort_by  query      string false "Sort order for announcements." Enums(price_asc, price_desc, date_asc, date_desc)
 // @Success      200      {array}    model.Announcement
 // @Failure      400      {string}   string "Invalid page or limit parameter"

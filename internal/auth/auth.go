@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,7 +10,7 @@ import (
 	"marketplace-service/internal/store"
 	"marketplace-service/internal/token"
 	"net/http"
-	"strings"
+	"strconv"
 )
 
 type handler struct {
@@ -78,17 +79,9 @@ func (h *handler) authHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func isAuthorized(tok *token.Service, r *http.Request) bool {
-	token := r.Header.Get("Authorization")
-	if token == "" {
-		return false
-	}
-	_, err := tok.ValidateToken(strings.Split(token, " ")[1])
-
-	if err != nil {
-		return false
-	}
-
-	return true
+	tokenStr := token.ExtractToken(r)
+	_, err := tok.ValidateToken(tokenStr)	
+	return err == nil
 }
 
 func AuthMiddleware(tok *token.Service, next http.HandlerFunc) http.HandlerFunc {
@@ -98,7 +91,14 @@ func AuthMiddleware(tok *token.Service, next http.HandlerFunc) http.HandlerFunc 
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		tokenStr := token.ExtractToken(r)
+		tokenValid, _ := tok.ValidateToken(tokenStr)
+		token, _ := strconv.Atoi(tokenValid)
+		
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, "token", token)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
 
