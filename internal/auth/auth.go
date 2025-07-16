@@ -11,7 +11,15 @@ import (
 	"marketplace-service/internal/token"
 	"net/http"
 	"strconv"
+
+	"github.com/go-playground/validator/v10"
 )
+
+var validate *validator.Validate
+
+func init() {
+	validate = validator.New()
+}
 
 type handler struct {
 	db     store.UserStore
@@ -20,8 +28,8 @@ type handler struct {
 }
 
 type AuthRequest struct {
-	Username string `json:"username" example:"john_doe"`
-	Password string `json:"password" example:"12345"`
+	Username string `json:"username" example:"testUser123" validate:"required,min=1,max=32"`
+	Password string `json:"password" example:"StrongP@ssw0rd!" validate:"required,min=8,max=64"`
 }
 
 func NewHandler(db store.UserStore, l logger.Logger, token *token.Service) *handler {
@@ -58,7 +66,14 @@ func (h *handler) authHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
-	
+
+	// --- Валидация с помощью go-playground/validator ---
+	if err := validate.Struct(userData); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	// --- Конец валидации ---
+
 	user, err := h.db.GetUserByCredentials(userData.Username, userData.Password)
 	if err != nil {
 		if errors.Is(err, database.ErrInvalidUsernameOrPassword) {

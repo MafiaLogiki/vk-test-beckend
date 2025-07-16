@@ -13,5 +13,5 @@ const DefaultSorting = "date_desc"
 
 type AnnouncementsStore interface  {
 	CreateAnnouncement(an *model.Announcement) error
-	GetAnnouncementsByPage(page, limit, currentUserId int, sortBy string) ([]model.Announcement, error)
+	GetAnnouncementsByPage(page, limit, currentUserId int, sortBy string, maxPrice, minPrice int) ([]model.Announcement, error)
 }

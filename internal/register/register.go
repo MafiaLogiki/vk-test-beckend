@@ -10,11 +10,25 @@ import (
 	"marketplace-service/internal/store"
 	"marketplace-service/internal/token"
 	"net/http"
+
+	"github.com/go-playground/validator/v10"
 )
 
+var validate *validator.Validate
+
+func init() {
+	validate = validator.New()
+}
+
 type RegisterRequest struct {
-	Username string `json:"username" example:"john_doe"`
-	Password string `json:"password" example:"12345"`
+	Username string `json:"username" example:"testUser123" validate:"required,min=1,max=32"`
+	Password string `json:"password" example:"StrongP@ssw0rd!" validate:"required,min=8,max=64"`
+}
+
+type RegisterResponse struct {
+	UserId   int    `json:"user_id" example:"10"`
+	Username string `json:"username" example:"CoolUsername"`
+	Password string `json:"password" example:"CoolPassword"`
 }
 
 type handler struct {
@@ -42,7 +56,7 @@ func (h *handler) RegisterRoutes(mux *http.ServeMux) {
 // @Accept       json
 // @Produce      json
 // @Param        request body RegisterRequest true "User registration details"
-// @Success      201 "User successfully registered"
+// @Success      201 {object} RegisterResponse "User successfully registered"
 // @Failure      400 "Invalid request payload or user already exists"
 // @Failure      500 "Internal server error"
 // @Router       /api/v1/users [post]
@@ -55,6 +69,12 @@ func (h *handler) registerNewUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
+
+	if err := validate.Struct(requestData); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	user := &model.User{Username: requestData.Username, Password: requestData.Password}
 	id, err := h.db.CreateUser(user)
 
@@ -67,9 +87,13 @@ func (h *handler) registerNewUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
+	response := RegisterResponse{UserId: int(id), Username: user.Username, Password: user.Password} 
+
 	token, _ := h.token.GenerateToken(fmt.Sprintf("%d", id))
 
 	w.Header().Set("Authorization", token)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("User successfully registered"))
 }

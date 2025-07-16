@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -15,6 +16,8 @@ const (
 	PageKey contextKey = "page"
 	LimitKey contextKey = "limit"
 	SortKey contextKey = "sort_by"
+	MinPrice contextKey = "min_price"
+	MaxPrice contextKey = "max_price"
 )
 
 type ValidationRule struct {
@@ -55,8 +58,6 @@ func ValidateQueryParams(rules ...ValidationRule) func(http.Handler) http.Handle
 				valueStr := query.Get(rule.ParamName)
 				if valueStr == "" {
 					valueStr = rule.DefaultValue
-					// http.Error(w, "Invalid request. There is must be" + valueStr + "query param", http.StatusBadRequest)
-					// return
 				}
 
 				validatedValue, err := rule.Validator(valueStr)
@@ -68,6 +69,26 @@ func ValidateQueryParams(rules ...ValidationRule) func(http.Handler) http.Handle
 				ctx = context.WithValue(ctx, rule.ContextKey, validatedValue)
 			}
 			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}
+
+func ValidateRequestBody[T any](validatorFunc func(T) error) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc( func (w http.ResponseWriter, r *http.Request){
+			var data T
+			if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+				http.Error(w, "Invalid request payload", http.StatusBadRequest)
+				return
+			}
+
+			if err := validatorFunc(data); err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			ctx := context.WithValue(r.Context(), "validatedData", data)
+			next.ServeHTTP(w, r.WithContext(ctx))			
 		})
 	}
 }

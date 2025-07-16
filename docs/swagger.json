@@ -27,17 +27,15 @@
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Page number for pagination (starts from 1)",
+                        "description": "Page number for pagination (starts from 1). Defaults to 1.",
                         "name": "page",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Number of items per page",
+                        "description": "Number of items per page. Defaults to 10.",
                         "name": "limit",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "enum": [
@@ -50,6 +48,18 @@
                         "description": "Sort order for announcements.",
                         "name": "sort_by",
                         "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "All announcements with price more than min_price. Default is 0",
+                        "name": "min_price",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "All announcements with price less than max_price. Default is (1 \u003c\u003c 31) - 1",
+                        "name": "max_price",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -58,21 +68,15 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Announcement"
+                                "$ref": "#/definitions/announcements.AnnouncementsGetResponse"
                             }
                         }
                     },
                     "400": {
-                        "description": "Invalid page or limit parameter",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "description": "Invalid page or limit parameter"
                     },
                     "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "description": "Internal server error"
                     }
                 }
             },
@@ -106,7 +110,10 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "Announcement successfully created"
+                        "description": "Announcement successfully created",
+                        "schema": {
+                            "$ref": "#/definitions/announcements.AnnouncementsPostResponse"
+                        }
                     },
                     "400": {
                         "description": "Invalid request payload"
@@ -180,7 +187,10 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": "User successfully registered"
+                        "description": "User successfully registered",
+                        "schema": {
+                            "$ref": "#/definitions/register.RegisterResponse"
+                        }
                     },
                     "400": {
                         "description": "Invalid request payload or user already exists"
@@ -193,69 +203,156 @@
         }
     },
     "definitions": {
-        "announcements.AnnouncementsPostRequest": {
+        "announcements.AnnouncementsGetResponse": {
             "type": "object",
             "properties": {
-                "article": {
-                    "type": "string"
+                "image_url": {
+                    "type": "string",
+                    "example": "http://example.com/images/car"
                 },
-                "cost": {
-                    "type": "integer"
+                "is_owner": {
+                    "type": "boolean",
+                    "example": false
                 },
-                "imageURL": {
-                    "type": "string"
+                "owner_username": {
+                    "type": "string",
+                    "example": "CoolUsername"
+                },
+                "price": {
+                    "type": "integer",
+                    "example": 700000
                 },
                 "text": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Продам машину, 120000км пробег"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Продам машину"
+                }
+            }
+        },
+        "announcements.AnnouncementsPostRequest": {
+            "type": "object",
+            "required": [
+                "article",
+                "cost",
+                "text"
+            ],
+            "properties": {
+                "article": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "minLength": 5,
+                    "example": "Продам старый диван"
+                },
+                "cost": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 5000
+                },
+                "image_url": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "http://example.com/images/sofa.jpg"
+                },
+                "text": {
+                    "type": "string",
+                    "maxLength": 2000,
+                    "minLength": 10,
+                    "example": "Продается диван б/у, в хорошем состоянии, самовывоз. Торг уместен."
+                }
+            }
+        },
+        "announcements.AnnouncementsPostResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string",
+                    "example": "2025-07-16T22:39:54.789179Z"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 11
+                },
+                "image_url": {
+                    "type": "string",
+                    "example": "http://example.com/images/car"
+                },
+                "price": {
+                    "type": "integer",
+                    "example": 700000
+                },
+                "text": {
+                    "type": "string",
+                    "example": "Продается машина, 120000км пробег"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Продам машину"
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 3
                 }
             }
         },
         "auth.AuthRequest": {
             "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
             "properties": {
                 "password": {
                     "type": "string",
-                    "example": "12345"
+                    "maxLength": 64,
+                    "minLength": 8,
+                    "example": "StrongP@ssw0rd!"
                 },
                 "username": {
                     "type": "string",
-                    "example": "john_doe"
-                }
-            }
-        },
-        "model.Announcement": {
-            "type": "object",
-            "properties": {
-                "image_url": {
-                    "type": "string"
-                },
-                "is_owner": {
-                    "type": "boolean"
-                },
-                "owner_username": {
-                    "type": "string"
-                },
-                "price": {
-                    "type": "integer"
-                },
-                "text": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
+                    "maxLength": 32,
+                    "minLength": 1,
+                    "example": "testUser123"
                 }
             }
         },
         "register.RegisterRequest": {
             "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
             "properties": {
                 "password": {
                     "type": "string",
-                    "example": "12345"
+                    "maxLength": 64,
+                    "minLength": 8,
+                    "example": "StrongP@ssw0rd!"
                 },
                 "username": {
                     "type": "string",
-                    "example": "john_doe"
+                    "maxLength": 32,
+                    "minLength": 1,
+                    "example": "testUser123"
+                }
+            }
+        },
+        "register.RegisterResponse": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "example": "CoolPassword"
+                },
+                "user_id": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "username": {
+                    "type": "string",
+                    "example": "CoolUsername"
                 }
             }
         }

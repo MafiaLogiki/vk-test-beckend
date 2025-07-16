@@ -1,47 +1,117 @@
 basePath: /api/v1
 definitions:
+  announcements.AnnouncementsGetResponse:
+    properties:
+      image_url:
+        example: http://example.com/images/car
+        type: string
+      is_owner:
+        example: false
+        type: boolean
+      owner_username:
+        example: CoolUsername
+        type: string
+      price:
+        example: 700000
+        type: integer
+      text:
+        example: Продам машину, 120000км пробег
+        type: string
+      title:
+        example: Продам машину
+        type: string
+    type: object
   announcements.AnnouncementsPostRequest:
     properties:
       article:
+        example: Продам старый диван
+        maxLength: 200
+        minLength: 5
         type: string
       cost:
+        example: 5000
+        minimum: 0
         type: integer
-      imageURL:
+      image_url:
+        example: http://example.com/images/sofa.jpg
+        maxLength: 255
         type: string
       text:
+        example: Продается диван б/у, в хорошем состоянии, самовывоз. Торг уместен.
+        maxLength: 2000
+        minLength: 10
         type: string
+    required:
+    - article
+    - cost
+    - text
+    type: object
+  announcements.AnnouncementsPostResponse:
+    properties:
+      created_at:
+        example: "2025-07-16T22:39:54.789179Z"
+        type: string
+      id:
+        example: 11
+        type: integer
+      image_url:
+        example: http://example.com/images/car
+        type: string
+      price:
+        example: 700000
+        type: integer
+      text:
+        example: Продается машина, 120000км пробег
+        type: string
+      title:
+        example: Продам машину
+        type: string
+      user_id:
+        example: 3
+        type: integer
     type: object
   auth.AuthRequest:
     properties:
       password:
-        example: "12345"
+        example: StrongP@ssw0rd!
+        maxLength: 64
+        minLength: 8
         type: string
       username:
-        example: john_doe
+        example: testUser123
+        maxLength: 32
+        minLength: 1
         type: string
-    type: object
-  model.Announcement:
-    properties:
-      image_url:
-        type: string
-      is_owner:
-        type: boolean
-      owner_username:
-        type: string
-      price:
-        type: integer
-      text:
-        type: string
-      title:
-        type: string
+    required:
+    - password
+    - username
     type: object
   register.RegisterRequest:
     properties:
       password:
-        example: "12345"
+        example: StrongP@ssw0rd!
+        maxLength: 64
+        minLength: 8
         type: string
       username:
-        example: john_doe
+        example: testUser123
+        maxLength: 32
+        minLength: 1
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  register.RegisterResponse:
+    properties:
+      password:
+        example: CoolPassword
+        type: string
+      user_id:
+        example: 10
+        type: integer
+      username:
+        example: CoolUsername
         type: string
     type: object
 host: localhost:8080
@@ -55,15 +125,13 @@ paths:
     get:
       description: Get a paginated list of announcements. This endpoint is public.
       parameters:
-      - description: Page number for pagination (starts from 1)
+      - description: Page number for pagination (starts from 1). Defaults to 1.
         in: query
         name: page
-        required: true
         type: integer
-      - description: Number of items per page
+      - description: Number of items per page. Defaults to 10.
         in: query
         name: limit
-        required: true
         type: integer
       - description: Sort order for announcements.
         enum:
@@ -74,6 +142,16 @@ paths:
         in: query
         name: sort_by
         type: string
+      - description: All announcements with price more than min_price. Default is
+          0
+        in: query
+        name: min_price
+        type: integer
+      - description: All announcements with price less than max_price. Default is
+          (1 << 31) - 1
+        in: query
+        name: max_price
+        type: integer
       produces:
       - application/json
       responses:
@@ -81,16 +159,12 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Announcement'
+              $ref: '#/definitions/announcements.AnnouncementsGetResponse'
             type: array
         "400":
           description: Invalid page or limit parameter
-          schema:
-            type: string
         "500":
           description: Internal server error
-          schema:
-            type: string
       security:
       - Bearer: []
       summary: Get announcements list
@@ -112,6 +186,8 @@ paths:
       responses:
         "201":
           description: Announcement successfully created
+          schema:
+            $ref: '#/definitions/announcements.AnnouncementsPostResponse'
         "400":
           description: Invalid request payload
         "500":
@@ -162,6 +238,8 @@ paths:
       responses:
         "201":
           description: User successfully registered
+          schema:
+            $ref: '#/definitions/register.RegisterResponse'
         "400":
           description: Invalid request payload or user already exists
         "500":

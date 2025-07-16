@@ -55,19 +55,20 @@ func extractAnnouncements(rows *sql.Rows) ([]model.Announcement, error) {
 	return announcements, nil
 }
 
-func (s *PostgresAnnouncementsStore) GetAnnouncementsByPage(page, limit, currentUserId int, sortBy string) ([]model.Announcement, error) {
+func (s *PostgresAnnouncementsStore) GetAnnouncementsByPage(page, limit, currentUserId int, sortBy string, minPrice, maxPrice int) ([]model.Announcement, error) {
 	query := fmt.Sprintf(`
 		SELECT users.username, title, text, image_url, price,
 		CASE WHEN $3 > 0 THEN (user_id = $3) ELSE NULL END AS is_owner
 		FROM announcements
 		JOIN users ON announcements.user_id = users.id
+		WHERE price => $4 AND price <= $5
 		ORDER BY %s
 		LIMIT $1
 		OFFSET $2
 	`, sortBy)
 	offset := (page - 1) * limit
 
-	rows, err := s.DB.Query(query, limit, offset, currentUserId)
+	rows, err := s.DB.Query(query, limit, offset, currentUserId, minPrice, maxPrice)
 	if err != nil {
 		return nil, err
 	}
