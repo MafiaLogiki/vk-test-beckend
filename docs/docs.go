@@ -17,6 +17,11 @@ const docTemplate = `{
     "paths": {
         "/api/v1/announcements": {
             "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Get a paginated list of announcements. This endpoint is public.",
                 "produces": [
                     "application/json"
@@ -215,20 +220,23 @@ const docTemplate = `{
         "model.Announcement": {
             "type": "object",
             "properties": {
-                "article": {
+                "image_url": {
                     "type": "string"
                 },
-                "costRubles": {
+                "is_owner": {
+                    "type": "boolean"
+                },
+                "owner_username": {
+                    "type": "string"
+                },
+                "price": {
                     "type": "integer"
-                },
-                "imageAddress": {
-                    "type": "string"
                 },
                 "text": {
                     "type": "string"
                 },
-                "userId": {
-                    "type": "integer"
+                "title": {
+                    "type": "string"
                 }
             }
         },

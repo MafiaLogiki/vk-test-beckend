@@ -22,16 +22,18 @@ definitions:
     type: object
   model.Announcement:
     properties:
-      article:
+      image_url:
         type: string
-      costRubles:
+      is_owner:
+        type: boolean
+      owner_username:
+        type: string
+      price:
         type: integer
-      imageAddress:
-        type: string
       text:
         type: string
-      userId:
-        type: integer
+      title:
+        type: string
     type: object
   register.RegisterRequest:
     properties:
@@ -80,6 +82,8 @@ paths:
           description: Internal server error
           schema:
             type: string
+      security:
+      - Bearer: []
       summary: Get announcements list
       tags:
       - Announcements

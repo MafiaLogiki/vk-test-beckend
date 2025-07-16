@@ -97,6 +97,7 @@ func (h *handler) createAnnouncement (w http.ResponseWriter, r *http.Request) {
 // @Failure      400    {string}   string "Invalid page or limit parameter"
 // @Failure      500    {string}   string "Internal server error"
 // @Router       /api/v1/announcements [get]
+// @Security     Bearer
 func (h *handler) getAnnouncements(w http.ResponseWriter, r *http.Request) {
 	pageString := r.URL.Query().Get("page")
 	if pageString == "" {
@@ -123,11 +124,16 @@ func (h *handler) getAnnouncements(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid page number", http.StatusBadRequest)
 		return
 	}
+	
+	currentUserIdString, _ := h.token.ValidateToken(token.ExtractToken(r))
+	currentUserId, err := strconv.Atoi(currentUserIdString)
+	h.logger.Debug(currentUserId, err)
 
-	announcements, err := h.db.GetAnnouncementsByPage(int32(page), int32(limit))
+	announcements, err := h.db.GetAnnouncementsByPage(page, limit, currentUserId)
 	h.logger.Debug(announcements)
 
 	if err != nil {
+		h.logger.Info(err)
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
 	}
