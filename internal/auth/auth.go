@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"marketplace-service/internal/database"
 	"marketplace-service/internal/logger"
 	"marketplace-service/internal/store"
 	"marketplace-service/internal/token"
@@ -78,7 +77,7 @@ func (h *handler) authHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.db.GetUserByCredentials(userData.Username, userData.Password)
 	if err != nil {
-		if errors.Is(err, database.ErrInvalidUsernameOrPassword) {
+		if errors.Is(err, store.ErrInvalidUsernameOrPassword) {
 			http.Error(w, "Invalid username or password", http.StatusBadRequest)
 			return
 		}
