@@ -12,7 +12,7 @@ import (
 
 type RegisterRequest struct {
 	Username string `json:"username" example:"john_doe"`
-	Password string `json:"password" example:"secure_password"`
+	Password string `json:"password" example:"12345"`
 }
 
 type handler struct {

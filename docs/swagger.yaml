@@ -12,7 +12,7 @@ definitions:
   register.RegisterRequest:
     properties:
       password:
-        example: secure_password
+        example: "12345"
         type: string
       username:
         example: john_doe
@@ -46,6 +46,8 @@ paths:
           description: Invalid request payload or invalid username or invalid password
         "500":
           description: Internal server error
+      security:
+      - Bearer: []
       summary: Auth user
       tags:
       - Users
@@ -74,7 +76,7 @@ paths:
       tags:
       - Users
 securityDefinitions:
-  ApiKeyAuth:
+  Bearer:
     in: header
     name: Authorization
     type: apiKey

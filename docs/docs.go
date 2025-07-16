@@ -17,6 +17,11 @@ const docTemplate = `{
     "paths": {
         "/api/v1/auth": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Auth user by username and password.",
                 "consumes": [
                     "application/json"
@@ -109,7 +114,7 @@ const docTemplate = `{
             "properties": {
                 "password": {
                     "type": "string",
-                    "example": "secure_password"
+                    "example": "12345"
                 },
                 "username": {
                     "type": "string",
@@ -119,7 +124,7 @@ const docTemplate = `{
         }
     },
     "securityDefinitions": {
-        "ApiKeyAuth": {
+        "Bearer": {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"
