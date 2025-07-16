@@ -12,6 +12,7 @@ import (
 )
 
 var ErrUserAlreadyExists = errors.New("user already exists")
+var ErrInvalidUsernameOrPassword = errors.New("invalid username or password")
 
 var database *sql.DB
 
@@ -45,4 +46,25 @@ func CreateNewUser(username, password string) (int64, error) {
 	}
 	id, _ := result.LastInsertId()
 	return id, nil
+}
+
+func CheckIfUserValid(username, password string) (int64, error) {
+	query := `SELECT id, username FROM users WHERE username = $1 and password = $2`
+	result, err := database.Query(query, username, password)
+	if err != nil {
+		return 0, err
+	}
+
+	defer result.Close()
+	var data struct {
+		Id       int64
+		Username string
+	}
+	
+	result.Next()
+	if result.Scan(&data.Id, &data.Username) != nil {
+		return 0, ErrInvalidUsernameOrPassword
+	}
+
+	return data.Id, nil
 }

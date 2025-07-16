@@ -1,5 +1,14 @@
 basePath: /api/v1
 definitions:
+  auth.AuthRequest:
+    properties:
+      password:
+        example: "12345"
+        type: string
+      username:
+        example: john_doe
+        type: string
+    type: object
   register.RegisterRequest:
     properties:
       password:
@@ -16,6 +25,30 @@ info:
   title: VK Test Backend API
   version: "1.0"
 paths:
+  /api/v1/auth:
+    post:
+      consumes:
+      - application/json
+      description: Auth user by username and password.
+      parameters:
+      - description: User authorization details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.AuthRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User successfully authorized
+        "400":
+          description: Invalid request payload or invalid username or invalid password
+        "500":
+          description: Internal server error
+      summary: Auth user
+      tags:
+      - Users
   /api/v1/users:
     post:
       consumes:

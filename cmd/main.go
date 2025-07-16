@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"time"
 
+	"marketplace-service/internal/auth"
 	"marketplace-service/internal/config"
 	"marketplace-service/internal/database"
 	"marketplace-service/internal/logger"
@@ -51,6 +52,9 @@ func main() {
 	
 	regHandler := register.NewHandler(l, token)
 	regHandler.RegisterRoutes(mux)
+
+	authHandler := auth.NewHandler(l, token)
+	authHandler.RegisterService(mux)
 
 	server := &http.Server {
 		Addr: fmt.Sprintf("%s:%d", cfg.Listen.BindIp, cfg.Listen.Port),

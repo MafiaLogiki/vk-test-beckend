@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"strings"
 	"fmt"
+	"net/http"
 
 	"github.com/sirupsen/logrus"
 )
@@ -61,6 +62,15 @@ func (f *customTextFormatter) Format(entry *logrus.Entry) ([]byte, error){
     return b.Bytes(), nil
 }
 
-func LoggerMiddleware() {
+func LoggerMiddleware(next http.Handler) http.Handler {
+    return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
+        
 
+        logger.WithFields(logrus.Fields{
+            "method": r.Method,
+            "path": r.URL.Path}).Info("Request was sended")
+        
+
+        next.ServeHTTP(w, r)
+    })
 }
