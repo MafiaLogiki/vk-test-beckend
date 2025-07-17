@@ -2,7 +2,6 @@ package announcements
 
 import (
 	"encoding/json"
-	"marketplace-service/internal/auth"
 	"marketplace-service/internal/logger"
 	"marketplace-service/internal/middleware"
 	"marketplace-service/internal/model"
@@ -98,15 +97,17 @@ func (h *handler) RegisterService(mux *http.ServeMux) {
 
 	getAnnouncementsHandler := http.HandlerFunc(h.getAnnouncements)
 	validationMiddleware := middleware.ValidateQueryParams(ValidationRules...)
-	authMiddleware := auth.OptionalAuthMiddleware(h.token)
+	authMiddleware := middleware.OptionalAuthMiddleware(h.token)
+	loggerMiddleware := middleware.LoggingMiddleware(h.logger)
 
 	finalHandler := middleware.Chain(
 		getAnnouncementsHandler,
 		validationMiddleware,
 		authMiddleware,
+		loggerMiddleware,
 	)
 
-	mux.HandleFunc("POST /api/v1/announcements", auth.AuthMiddleware(h.token, h.createAnnouncement))
+	mux.HandleFunc("POST /api/v1/announcements", middleware.AuthMiddleware(h.token, h.createAnnouncement))
 	mux.Handle("GET /api/v1/announcements", finalHandler)
 }
 

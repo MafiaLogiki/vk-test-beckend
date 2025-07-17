@@ -61,7 +61,7 @@ func (s *PostgresAnnouncementsStore) GetAnnouncementsByPage(page, limit, current
 		CASE WHEN $3 > 0 THEN (user_id = $3) ELSE NULL END AS is_owner
 		FROM announcements
 		JOIN users ON announcements.user_id = users.id
-		WHERE price => $4 AND price <= $5
+		WHERE price >= $4 AND price <= $5
 		ORDER BY %s
 		LIMIT $1
 		OFFSET $2
