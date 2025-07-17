@@ -100,7 +100,7 @@ func (h *handler) registerNewUser(w http.ResponseWriter, r *http.Request) {
 
 	token, _ := h.token.GenerateToken(fmt.Sprintf("%d", id))
 
-	w.Header().Set("Authorization", token)
+	w.Header().Set("Authorization", "Bearer "+token)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 

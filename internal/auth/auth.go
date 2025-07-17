@@ -9,7 +9,6 @@ import (
 	"marketplace-service/internal/store"
 	"marketplace-service/internal/token"
 	"net/http"
-	"strconv"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -88,7 +87,7 @@ func (h *handler) authHandler(w http.ResponseWriter, r *http.Request) {
 
 	token, _ := h.token.GenerateToken(fmt.Sprintf("%d", user.ID))
 
-	w.Header().Set("Authorization", token)
+	w.Header().Set("Authorization", "Bearer "+token)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("User successfully authorized"))
 }

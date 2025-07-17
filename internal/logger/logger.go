@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"strings"
 	"fmt"
-	"net/http"
 
 	"github.com/sirupsen/logrus"
 )
